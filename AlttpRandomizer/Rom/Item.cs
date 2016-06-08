@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text;
 
 namespace AlttpRandomizer.Rom
 {
@@ -104,7 +105,176 @@ namespace AlttpRandomizer.Rom
             }
         }
 
-        public static byte[] GetCheckLocation(ItemType item)
+		public static byte[] GetSillyCreditsName(ItemType item)
+		{
+			int maxLen =  "finger webs for sale".Length; 
+			StringBuilder sb = new StringBuilder(maxLen, maxLen);
+			// str needs to fit in the length of the string "finger webs for sale"
+			// that's 20 chars!!! wowza!
+
+			try
+			{
+				switch (item)
+				{
+					case ItemType.Bow:
+						sb.Append("bow");
+						break;
+					case ItemType.BowAndArrows:
+						sb.Append("arrows");
+						break;
+					case ItemType.BowAndSilverArrows:
+						sb.Append("sharp arrow");
+						break;
+					case ItemType.Boomerang:
+					case ItemType.RedBoomerang:
+						sb.Append("boomerang");
+						break;
+					case ItemType.Hookshot:
+						sb.Append("hookshot");
+						break;
+					case ItemType.Mushroom:
+					case ItemType.Powder:
+						sb.Append("toxicant");
+						break;
+					case ItemType.FireRod:
+						sb.Append("fire rod");
+						break;
+					case ItemType.IceRod:
+						sb.Append("ice rod");
+						break;
+					case ItemType.Bombos:
+						sb.Append("bombos");
+						break;
+					case ItemType.Ether:
+						sb.Append("ether");
+						break;
+					case ItemType.Quake:
+						sb.Append("earthquake");
+						break;
+					case ItemType.Lamp:
+						sb.Append("candle");
+						break;
+					case ItemType.Hammer:
+						sb.Append("hammer");
+						break;
+					case ItemType.Shovel:
+						sb.Append("shovel");
+						break;
+					case ItemType.OcarinaActive:
+					case ItemType.OcarinaInactive:
+						sb.Append("whistle");
+						break;
+					case ItemType.BugCatchingNet:
+						sb.Append("bug catcher");
+						break;
+					case ItemType.BookOfMudora:
+						sb.Append("mudora tome");
+						break;
+					case ItemType.CaneOfSomaria:
+						sb.Append("block cane");
+						break;
+					case ItemType.StaffOfByrna:
+						sb.Append("byrna cane");
+						break;
+					case ItemType.Cape:
+						sb.Append("magic cape");
+						break;
+					case ItemType.MagicMirror:
+						sb.Append("mirror");
+						break;
+					case ItemType.PowerGlove:
+						sb.Append("power glove");
+						break;
+					case ItemType.TitansMitt:
+						sb.Append("titan mitt");
+						break;
+					case ItemType.PegasusBoots:
+						sb.Append("sprint shoe");
+						break;
+					case ItemType.Flippers:
+						sb.Append("flippers");
+						break;
+					case ItemType.MoonPearl:
+						sb.Append("moon pearl");
+						break;
+					case ItemType.L1Sword:
+					case ItemType.L1SwordAndShield:
+					case ItemType.L2Sword:
+					case ItemType.L3Sword:
+					case ItemType.L4Sword:
+						sb.Append("sword");
+						break;
+					case ItemType.BlueShield:
+						sb.Append("shield");
+						break;
+					case ItemType.RedShield:
+						sb.Append("red shield");
+						break;
+					case ItemType.MirrorShield:
+						sb.Append("mirr shield");
+						break;
+					case ItemType.BlueMail:
+						sb.Append("blue mail");
+						break;
+					case ItemType.RedMail:
+						sb.Append("red mail");
+						break;
+					default:
+						throw new ArgumentException("Item must be a unique item.", "item");
+				}
+
+			
+				sb.Append(" for sale");
+			}
+			catch (ArgumentOutOfRangeException)
+			{
+				sb.Clear();
+				sb.Append("items for sale");
+				Console.Error.WriteLine("attempted to pass too large an itemname to credits! item: " + item);
+			}
+			
+
+			//space it some on the left to center it sliIIiightly better
+			if (sb.Length < maxLen)
+			{
+				sb.Insert(0, " ", maxLen - sb.Length);
+			}
+
+			return ConvertToCreditEncoding(sb.ToString());
+		}
+
+		private static byte[] ConvertToCreditEncoding(string str)
+		{
+			byte[] buf = Encoding.ASCII.GetBytes(str.ToLower());
+
+			// 'a' in ASCII = 0x61
+			// 'a' in z3credits = 0x1A (among others, but this for the small font)
+			for (var i = 0; i < buf.Length; ++i)
+			{
+				switch (buf[i])
+				{
+					case (byte)' ': 
+						buf[i] = 0x9F;
+						break;
+					case (byte)'\'': 
+						buf[i] = 0x35;
+						break;
+					case (byte)'-': 
+						buf[i] = 0x36;
+						break;
+					case (byte)',': 
+						buf[i] = 0x37;
+						break;
+					default:
+						buf[i] = (byte)(buf[i] - 0x47);
+						break;
+				}
+			}
+			return buf;
+		}
+
+
+		public static byte[] GetCheckLocation(ItemType item)
         {
             byte retVal;
 

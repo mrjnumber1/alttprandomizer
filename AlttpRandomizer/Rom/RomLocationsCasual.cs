@@ -1956,6 +1956,10 @@ namespace AlttpRandomizer.Rom
                         {
                             rom.Seek(0x30F17, SeekOrigin.Begin);
                             rom.Write(Item.GetCheckLocation(item), 0, 1);
+							
+							// having an offset display with an odd number of digits is an obamanation
+							rom.Seek(0x076A85, SeekOrigin.Begin); 
+							rom.Write(Item.GetSillyCreditsName(item), 0, "finger webs for sale".Length);
                         }
                 },
                 new Location

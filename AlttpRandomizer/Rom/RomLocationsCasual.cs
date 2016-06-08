@@ -72,7 +72,8 @@ namespace AlttpRandomizer.Rom
                         have =>
                         CanEscapeCastle(have)
                         && have.Contains(ItemType.PegasusBoots)
-                        && have.Contains(ItemType.TitansMitt),
+                        && (have.Contains(ItemType.TitansMitt)
+                            || CanAccessLowerDarkWorld(have)),
                 },
                 new Location
                 {
@@ -106,7 +107,8 @@ namespace AlttpRandomizer.Rom
                     BigKeyNeeded = true,
                     CanAccess =
                         have =>
-                        CanEnterSwampPalace(have),
+                        CanEnterSwampPalace(have)
+                        && have.Contains(ItemType.Hammer),
                 },
                 new Location
                 {
@@ -570,7 +572,8 @@ namespace AlttpRandomizer.Rom
                     KeysNeeded = 2,
                     CanAccess =
                         have =>
-                        CanEnterTurtleRock(have),
+                        CanEnterTurtleRock(have)
+                        && have.Contains(ItemType.FireRod),
                 },
                 new Location
                 {
@@ -582,7 +585,8 @@ namespace AlttpRandomizer.Rom
                     BigKeyNeeded = true,
                     CanAccess =
                         have =>
-                        CanEnterTurtleRock(have),
+                        CanEnterTurtleRock(have)
+                        && have.Contains(ItemType.FireRod),
                 },
                 new Location
                 {
@@ -1080,7 +1084,8 @@ namespace AlttpRandomizer.Rom
                     KeysNeeded = 3,
                     CanAccess =
                         have =>
-                        CanEnterSwampPalace(have),
+                        CanEnterSwampPalace(have)
+                        && have.Contains(ItemType.Hammer),
                 },
                 new Location
                 {
@@ -1091,7 +1096,8 @@ namespace AlttpRandomizer.Rom
                     KeysNeeded = 4,
                     CanAccess =
                         have =>
-                        CanEnterSwampPalace(have),
+                        CanEnterSwampPalace(have)
+                        && have.Contains(ItemType.Hammer),
                 },
                 new Location
                 {
@@ -1102,7 +1108,8 @@ namespace AlttpRandomizer.Rom
                     KeysNeeded = 4,
                     CanAccess =
                         have =>
-                        CanEnterSwampPalace(have),
+                        CanEnterSwampPalace(have)
+                        && have.Contains(ItemType.Hammer),
                 },
                 new Location
                 {
@@ -1126,7 +1133,8 @@ namespace AlttpRandomizer.Rom
                     CanAccess =
                         have =>
                         CanEnterSwampPalace(have)
-                        && have.Contains(ItemType.Hookshot),
+                        && have.Contains(ItemType.Hookshot)
+                        && have.Contains(ItemType.Hammer),
                 },
                 new Location
                 {
@@ -1138,7 +1146,8 @@ namespace AlttpRandomizer.Rom
                     CanAccess =
                         have =>
                         CanEnterSwampPalace(have)
-                        && have.Contains(ItemType.Hookshot),
+                        && have.Contains(ItemType.Hookshot)
+                        && have.Contains(ItemType.Hammer),
                 },
                 new Location
                 {
@@ -1748,7 +1757,9 @@ namespace AlttpRandomizer.Rom
                     CanAccess =
                         have =>
                         CanAccessEastDarkWorldDeathMountain(have)
-                        && have.Contains(ItemType.Hookshot),
+                        && have.Contains(ItemType.Hookshot)
+                        // not actually required here, but stops some deadlocks
+                        && have.Contains(ItemType.FireRod),
                 },
                 new Location
                 {
@@ -1760,8 +1771,7 @@ namespace AlttpRandomizer.Rom
                     CanAccess =
                         have =>
                         CanEscapeCastle(have)
-                        && have.Contains(ItemType.PowerGlove)
-                        && have.Contains(ItemType.PegasusBoots),
+                        && have.Contains(ItemType.PowerGlove),
                 },
                 new Location
                 {
@@ -1773,8 +1783,7 @@ namespace AlttpRandomizer.Rom
                     CanAccess =
                         have =>
                         CanEscapeCastle(have)
-                        && have.Contains(ItemType.PowerGlove)
-                        && have.Contains(ItemType.PegasusBoots),
+                        && have.Contains(ItemType.PowerGlove),
                 },
                 new Location
                 {
@@ -1786,8 +1795,7 @@ namespace AlttpRandomizer.Rom
                     CanAccess =
                         have =>
                         CanEscapeCastle(have)
-                        && have.Contains(ItemType.PowerGlove)
-                        && have.Contains(ItemType.PegasusBoots),
+                        && have.Contains(ItemType.PowerGlove),
                 },
                 //// Getting anything other than the sword here can be bad for progress... may as well keep the sword here since you can't use it if you get it before the uncle.
                 //new Location
@@ -2225,12 +2233,12 @@ namespace AlttpRandomizer.Rom
 
         public List<Location> GetAvailableLocations(List<ItemType> haveItems)
         {
-            return (from Location location in Locations where (location.Item == null || location.Item.Type == ItemType.Progression) && location.CanAccess(haveItems) select location).ToList();
+            return (from Location location in Locations where (location.Item == null) && location.CanAccess(haveItems) select location).ToList();
         }
 
         public List<Location> GetUnavailableLocations(List<ItemType> haveItems)
         {
-            return (from Location location in Locations where (location.Item == null || location.Item.Type == ItemType.Progression) && !location.CanAccess(haveItems) select location).ToList();
+            return (from Location location in Locations where (location.Item == null) && !location.CanAccess(haveItems) select location).ToList();
         }
 
         public void TryInsertCandidateItem(List<Location> currentLocations, List<ItemType> candidateItemList, ItemType candidateItem)
@@ -2238,7 +2246,7 @@ namespace AlttpRandomizer.Rom
             var uniqueItems = GetUniqueItems();
             var badLateGameItem = IsLateGameItem(candidateItem) && !currentLocations.Any(x => x.LateGameItem);
             var needUniqueItem = !uniqueItems.Contains(candidateItem) && currentLocations.All(x => x.UniqueItemOnly);
-            var badFirstItem = IsBadFirstItem(candidateItem) && currentLocations.Any(x => x.Name == "[cave-040] Link's House");
+            var badFirstItem = IsBadFirstItem(candidateItem) && currentLocations.All(x => x.Name == "[cave-040] Link's House");
 
             if (!badLateGameItem && !needUniqueItem && !badFirstItem)
             {
@@ -2257,6 +2265,7 @@ namespace AlttpRandomizer.Rom
             var uniqueItems = GetUniqueItems();
             bool badLateGameItemSpot;
             bool badUniqueItemSpot;
+            bool badFirstItemSpot;
             bool unusedUniqueItemSpot;
 
             do
@@ -2265,8 +2274,9 @@ namespace AlttpRandomizer.Rom
 
                 badLateGameItemSpot = IsLateGameItem(insertedItem) && !currentLocations[retVal].LateGameItem;
                 badUniqueItemSpot = !uniqueItems.Contains(insertedItem) && currentLocations[retVal].UniqueItemOnly;
+                badFirstItemSpot = IsBadFirstItem(insertedItem) && currentLocations[retVal].Name == "[cave-040] Link's House";
                 unusedUniqueItemSpot = uniqueItems.Contains(insertedItem) && !currentLocations[retVal].UniqueItemOnly && currentLocations.Any(x => x.UniqueItemOnly);
-            } while (badLateGameItemSpot || badUniqueItemSpot || unusedUniqueItemSpot);
+            } while (badLateGameItemSpot || badUniqueItemSpot || badFirstItemSpot || unusedUniqueItemSpot);
 
             return retVal;
         }
@@ -2282,6 +2292,7 @@ namespace AlttpRandomizer.Rom
             var uniqueItems = GetUniqueItems();
             bool badLateGameItem;
             bool needUniqueItem;
+            bool preferLateGameItem;
 
             do
             {
@@ -2289,7 +2300,8 @@ namespace AlttpRandomizer.Rom
 
                 badLateGameItem = IsLateGameItem(retVal) && !currentLocations.Any(x => x.LateGameItem);
                 needUniqueItem = !uniqueItems.Contains(retVal) && currentLocations.All(x => x.UniqueItemOnly);
-            } while (badLateGameItem || needUniqueItem);
+                preferLateGameItem = !IsLateGameItem(retVal) && currentLocations.Any(x => x.LateGameItem) && itemPool.Any(IsLateGameItem);
+            } while (badLateGameItem || needUniqueItem || preferLateGameItem);
 
             return retVal;
         }
@@ -2298,7 +2310,7 @@ namespace AlttpRandomizer.Rom
         {
             var retVal = new List<ItemType>();
 
-            if (CanDefeatEasternPalace(have) && !have.Contains(ItemType.BookOfMudora))
+            if (CanEscapeCastle(have) && have.Contains(ItemType.PegasusBoots) && !have.Contains(ItemType.BookOfMudora))
             {
                 retVal.Add(ItemType.BookOfMudora);
             }
@@ -2395,6 +2407,7 @@ namespace AlttpRandomizer.Rom
                 ItemType.PieceOfHeart,
                 ItemType.RedBoomerang,
                 ItemType.RedMail,
+                ItemType.RedShield,
                 ItemType.StaffOfByrna,
                 
                 // other treasure box contents
@@ -2432,7 +2445,6 @@ namespace AlttpRandomizer.Rom
                 ItemType.OneRupee,
                 ItemType.FiveRupees,
                 ItemType.FiveRupees,
-                ItemType.TwentyRupees,
                 ItemType.TwentyRupees,
                 ItemType.TwentyRupees,
                 ItemType.TwentyRupees,
